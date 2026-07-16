@@ -1,6 +1,6 @@
-Not just an Universal MediaCreationTool wrapper script with ingenious support for business editions,  
+Universal MediaCreationTool wrapper script — supports all Windows 10/11 editions (Home, Pro, Enterprise, Education, VL, etc.)  
 <img src="preview.png">  
-A powerful yet simple windows 10 / 11 deployment automation tool as well!  
+Includes hidden business/volume-licensed editions and powerful deployment automation.  
 *If you had no success launching the script so far, this latest version will work*  
 
 Presets  
@@ -125,4 +125,11 @@ _We did it! We broke [the previous gist](https://git.io/MediaCreationTool.bat)_ 
 2022.03.18: fix regression with Auto Upgrade; removed powershell -nop arg (issue #41); enhanced 11 AutoUnattend.xml
 2022.03.20: stable - all issues ironed out; improved script ui; upgrade keeping files from Eval editions too
             last squash I promise ;)
+2025.11.22: extended version range to 25H2; new choice-19 for Windows 11 25H2 (VER=26200)
+            fixed critical bugs: xcopy /B flag, Bypas typo in auto.cmd, ISO deletion on Auto ISO preset
+            fixed broken XML parsing (try/catch in progress loops), SelectionItemPattern on buttons
+            fixed 11_22H2 CAB double .cab extension, 22H2 products.cab URL
+            Windows Terminal detection (skip registry color changes when running in WT)
+            better download feedback (shows method + cache status), improved error handling
+            TPM/Hardware bypass for 25H2, UI automation warning messages instead of silent catch
 ```
