@@ -388,22 +388,24 @@ if %PRE% leq 3 %<%:6f " %MEDIA_LANGCODE% "%>>%  &  %<%:9f " %MEDIA_CFG% "%>>%  &
 echo;
 
 ::# download MCT and CAB / XML - new snippet to try via bits, net, certutil, and insecure/secure
-if defined EXE echo;%EXE% & call :DOWNLOAD "%EXE%" MediaCreationTool%VID%.exe "%CD%"
-if defined XML echo;%XML% & call :DOWNLOAD "%XML%" products%VID%.xml "%CD%"
-if defined CAB echo;%CAB% & call :DOWNLOAD "%CAB%" products%VID%.cab "%CD%"
+set "TARGET=%WORK%\MCT"
+if defined EXE echo;%EXE% & call :DOWNLOAD "%EXE%" MediaCreationTool%VID%.exe "%TARGET%"
+if defined XML echo;%XML% & call :DOWNLOAD "%XML%" products%VID%.xml "%TARGET%"
+if defined CAB echo;%CAB% & call :DOWNLOAD "%CAB%" products%VID%.cab "%TARGET%"
+pushd "%TARGET%"
 if exist products%VID%.xml copy /y products%VID%.xml products.xml >nul 2>nul
 if exist products%VID%.cab del /f /q products%VID%.xml >nul 2>nul
 if exist products%VID%.cab (expand.exe -R products%VID%.cab -F:* . >nul 2>nul || %<%:4f " expand failed for products.cab "%>%)
 set "/hint=MCT/XML download failed - disable antivirus temporarily, check internet, or run as admin"
-echo;& set err=& set "ESD=%CD%"& for %%s in ("%CD%\products.xml" "%CD%\MediaCreationTool%VID%.exe") do if not exist %%~s set err=1
+echo;& set err=& for %%s in ("%TARGET%\products.xml" "%TARGET%\MediaCreationTool%VID%.exe") do if not exist %%~s set err=1
 if defined err (
   %<%:4f " DOWNLOAD ERROR "%>>%
-  if not exist "%CD%\products.xml" %<%:c0 " (missing products.xml in %CD%)"%>>%
-  if not exist "%CD%\MediaCreationTool%VID%.exe" %<%:c0 " (missing MediaCreationTool%VID%.exe in %CD%)"%>>%
-  %<%:0f " HINT: antimalware may have removed files, try disabling it temporarily or run from an excluded folder "%>%
-  %<%:0f " %/hint% "%>%
+  if not exist "%TARGET%\products.xml" %<%:c0 " (missing products.xml in %TARGET%)"%>>%
+  if not exist "%TARGET%\MediaCreationTool%VID%.exe" %<%:c0 " (missing MediaCreationTool%VID%.exe in %TARGET%)"%>>%
+  %<%:0f " TIP: run from C:\ESD, disable antimalware, or check VPN/network "%>%
+  dir "%TARGET%\*.exe" "%TARGET%\products.*" /b
 ) else %<%:0f " %PRESET% "%>%
-if defined err (dir *.exe products.* /b & pause & exit /b1)
+if defined err (del /f /q "%TARGET%\products%VID%.*" "%TARGET%\MediaCreationTool%VID%.exe" 2>nul & pause & exit /b1)
 
 ::# configure products.xml in one go via powershell snippet - most of the MCT fixes happen there
 call :PRODUCTS_XML
