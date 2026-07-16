@@ -388,9 +388,9 @@ if %PRE% leq 3 %<%:6f " %MEDIA_LANGCODE% "%>>%  &  %<%:9f " %MEDIA_CFG% "%>>%  &
 echo;
 
 ::# download MCT and CAB / XML - new snippet to try via bits, net, certutil, and insecure/secure
-if defined EXE echo;%EXE% & call :DOWNLOAD "%EXE%" MediaCreationTool%VID%.exe
-if defined XML echo;%XML% & call :DOWNLOAD "%XML%" products%VID%.xml
-if defined CAB echo;%CAB% & call :DOWNLOAD "%CAB%" products%VID%.cab
+if defined EXE echo;%EXE% & call :DOWNLOAD "%EXE%" MediaCreationTool%VID%.exe "%CD%"
+if defined XML echo;%XML% & call :DOWNLOAD "%XML%" products%VID%.xml "%CD%"
+if defined CAB echo;%CAB% & call :DOWNLOAD "%CAB%" products%VID%.cab "%CD%"
 if exist products%VID%.xml copy /y products%VID%.xml products.xml >nul 2>nul
 if exist products%VID%.cab del /f /q products%VID%.xml >nul 2>nul
 if exist products%VID%.cab (expand.exe -R products%VID%.cab -F:* . >nul 2>nul || %<%:4f " expand failed for products.cab "%>%)
@@ -945,7 +945,7 @@ function DOWNLOAD ($u, $f, $p = (get-location).Path) {
   $file = join-path (resolve-path $p) $f; $s = 'https://'; $i = 'http://'; $d = $u.replace($s,'').replace($i,''); $https = $s+$d; $http = $i+$d
      write-host -nonew -fore Gray "Downloading $f..."
   foreach ($url in $http, $https) {
-    if (([IO.FileInfo]$file).Exists) {write-host -fore Green " (cached)"; return}
+    if (([IO.FileInfo]$file).Exists) {write-host -fore Green " (cached)"; write-host -fore DarkGray " $file"; return}
     try {Start-BitsTransfer $url $file -ea 1; if (([IO.FileInfo]$file).Exists) {write-host -fore Green " (BITS)"; return}} catch {write-host -nonew -fore DarkGray "."}
     try {Invoke-WebRequest $url -OutFile $file; if (([IO.FileInfo]$file).Exists) {write-host -fore Green " (HTTP)"; return}} catch {write-host -nonew -fore DarkGray "."}
     $j = (Get-Date).Ticks
