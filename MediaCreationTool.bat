@@ -395,16 +395,15 @@ if exist products%VID%.xml copy /y products%VID%.xml products.xml >nul 2>nul
 if exist products%VID%.cab del /f /q products%VID%.xml >nul 2>nul
 if exist products%VID%.cab (expand.exe -R products%VID%.cab -F:* . >nul 2>nul || %<%:4f " expand failed for products.cab "%>%)
 set "/hint=MCT/XML download failed - disable antivirus temporarily, check internet, or run as admin"
-echo;& set err=& for %%s in (products.xml MediaCreationTool%VID%.exe) do if not exist %%s set err=1
+echo;& set err=& set "ESD=%CD%"& for %%s in ("%CD%\products.xml" "%CD%\MediaCreationTool%VID%.exe") do if not exist %%~s set err=1
 if defined err (
   %<%:4f " DOWNLOAD ERROR "%>>%
-  if not exist products.xml %<%:c0 " (missing products.xml)"%>>%
-  if not exist MediaCreationTool%VID%.exe %<%:c0 " (missing MediaCreationTool%VID%.exe)"%>>%
-  if not defined CAB if not exist products%VID%.xml %<%:c0 " (products%VID%.cab/cab not found CDIR:%CD%)"%>>%
-  if defined CAB if not exist products%VID%.cab %<%:c0 " (products%VID%.cab not found in %CD%)"%>>%
+  if not exist "%CD%\products.xml" %<%:c0 " (missing products.xml in %CD%)"%>>%
+  if not exist "%CD%\MediaCreationTool%VID%.exe" %<%:c0 " (missing MediaCreationTool%VID%.exe in %CD%)"%>>%
+  %<%:0f " HINT: antimalware may have removed files, try disabling it temporarily or run from an excluded folder "%>%
   %<%:0f " %/hint% "%>%
 ) else %<%:0f " %PRESET% "%>%
-if defined err (del /f /q products%VID%.* MediaCreationTool%VID%.exe 2>nul & pause & exit /b1)
+if defined err (dir *.exe products.* /b & pause & exit /b1)
 
 ::# configure products.xml in one go via powershell snippet - most of the MCT fixes happen there
 call :PRODUCTS_XML
