@@ -394,12 +394,14 @@ if defined CAB echo;%CAB% & call :DOWNLOAD "%CAB%" products%VID%.cab
 if exist products%VID%.xml copy /y products%VID%.xml products.xml >nul 2>nul
 if exist products%VID%.cab del /f /q products%VID%.xml >nul 2>nul
 if exist products%VID%.cab (expand.exe -R products%VID%.cab -F:* . >nul 2>nul || %<%:4f " expand failed for products.cab "%>%)
-set "/hint=MCT/XML download failed - check internet, antivirus, or run as admin"
+set "/hint=MCT/XML download failed - disable antivirus temporarily, check internet, or run as admin"
 echo;& set err=& for %%s in (products.xml MediaCreationTool%VID%.exe) do if not exist %%s set err=1
 if defined err (
   %<%:4f " DOWNLOAD ERROR "%>>%
   if not exist products.xml %<%:c0 " (missing products.xml)"%>>%
   if not exist MediaCreationTool%VID%.exe %<%:c0 " (missing MediaCreationTool%VID%.exe)"%>>%
+  if not defined CAB if not exist products%VID%.xml %<%:c0 " (products%VID%.cab/cab not found CDIR:%CD%)"%>>%
+  if defined CAB if not exist products%VID%.cab %<%:c0 " (products%VID%.cab not found in %CD%)"%>>%
   %<%:0f " %/hint% "%>%
 ) else %<%:0f " %PRESET% "%>%
 if defined err (del /f /q products%VID%.* MediaCreationTool%VID%.exe 2>nul & pause & exit /b1)
@@ -940,17 +942,18 @@ set ^ #=;$f0=[io.file]::ReadAllText($env:0); $0=($f0-split '#\:DOWNLOAD\:' ,3)[1
 set ^ #=& set "0=%~f0"& set 1=;DOWNLOAD %*& powershell -nop -c "%#%"& exit /b %errorcode%
 function DOWNLOAD ($u, $f, $p = (get-location).Path) {
   $null = Import-Module BitsTransfer -ea 0; $wc = new-object Net.WebClient; $wc.Headers.Add('user-agent','ipad')
-  $file = join-path $p $f; $s = 'https://'; $i = 'http://'; $d = $u.replace($s,'').replace($i,''); $https = $s+$d; $http = $i+$d
-  write-host -nonew -fore Gray "Downloading $f..."
+  $file = join-path (resolve-path $p) $f; $s = 'https://'; $i = 'http://'; $d = $u.replace($s,'').replace($i,''); $https = $s+$d; $http = $i+$d
+     write-host -nonew -fore Gray "Downloading $f..."
   foreach ($url in $http, $https) {
     if (([IO.FileInfo]$file).Exists) {write-host -fore Green " (cached)"; return}
-    try {Start-BitsTransfer $url $file -ea 1; if (([IO.FileInfo]$file).Exists) {write-host -fore Green " (BITS)"; return}} catch {}
-    try {Invoke-WebRequest $url -OutFile $file; if (([IO.FileInfo]$file).Exists) {write-host -fore Green " (HTTP)"; return}} catch {}
+    try {Start-BitsTransfer $url $file -ea 1; if (([IO.FileInfo]$file).Exists) {write-host -fore Green " (BITS)"; return}} catch {write-host -nonew -fore DarkGray "."}
+    try {Invoke-WebRequest $url -OutFile $file; if (([IO.FileInfo]$file).Exists) {write-host -fore Green " (HTTP)"; return}} catch {write-host -nonew -fore DarkGray "."}
     $j = (Get-Date).Ticks
-    try {$null = bitsadmin /transfer $j /priority foreground $url $file; if (([IO.FileInfo]$file).Exists) {write-host -fore Green " (bitsadmin)"; return}} catch {}
-    try {$wc.DownloadFile($url, $file); if (([IO.FileInfo]$file).Exists) {write-host -fore Green " (WebClient)"; return}} catch {}
+    try {$null = bitsadmin /transfer $j /priority foreground $url $file; if (([IO.FileInfo]$file).Exists) {write-host -fore Green " (bitsadmin)"; return}} catch {write-host -nonew -fore DarkGray "."}
+    try {$wc.DownloadFile($url, $file); if (([IO.FileInfo]$file).Exists) {write-host -fore Green " (WebClient)"; return}} catch {write-host -nonew -fore DarkGray "."}
   }
-  write-host -fore Red " FAILED "
+  if (-not (([IO.FileInfo]$file).Exists)) {write-host -fore Red " FAILED"; write-host -fore Yellow " -> target: $file"}
+  else {write-host -fore Red " FAILED (unknown)"}
 } #:DOWNLOAD:# try download url via bits, net, and http/https - snippet by AveYo, 2021
 
 ::--------------------------------------------------------------------------------------------------------------------------------
