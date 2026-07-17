@@ -1,3 +1,5 @@
+Original: https://github.com/AveYo/MediaCreationTool.bat
+
 Universal MediaCreationTool wrapper script — supports all Windows 10/11 editions (Home, Pro, Enterprise, Education, VL, etc.)  
 <img src="preview.png">  
 Includes hidden business/volume-licensed editions and powerful deployment automation.  
